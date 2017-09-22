@@ -13,7 +13,6 @@ def extractFacesFromFolder(folderPath):
     
 
     for filename in glob.glob(folderPath+'*.jpg'):
-            
         # load image on gray scale :
         image = cv2.imread(filename)
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -25,8 +24,10 @@ def extractFacesFromFolder(folderPath):
         for (x, y, w, h) in faces:
             cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
             sub_face = image[y:y+h, x:x+w]
-        
-        cv2.imwrite(filename+'face'+'.jpg',sub_face)
+            print "Face identificada"
+            cv2.imwrite(filename+'face'+'.jpg',sub_face)
+
+    print "Processo terminado!"
     #return sub_face
 
 def extractFaceFromFile(filePath):
@@ -45,4 +46,12 @@ def extractFaceFromFile(filePath):
         sub_face = cv2.resize(sub_face,(224,224))
     
     return sub_face
+
+def prepareToPredict(filePath):
+    '''Prepare the extracted face to prediction'''
+    face = extractFaceFromFile(filePath)
+    im = face.transpose(2,0,1)
+    im = np.expand_dims(im, axis=0)
+
+    return im
     
