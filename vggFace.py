@@ -66,7 +66,7 @@ def save_bottleneck_features(model,train_data_dir,val_data_dir,batch_size):
 
     generator = datagen.flow_from_directory(train_data_dir, target_size=(224,224),batch_size=batch_size,
             class_mode = None, shuffle=False)
-    bottleneck_features_train = model.predict_generator(generator,20)
+    bottleneck_features_train = model.predict_generator(generator,24)
     np.save(open('bottleneck_features_train.npy','w'), bottleneck_features_train)
     trainLabels = generator.classes
     np.save(open('train_labels.npy','w'), trainLabels)
@@ -80,11 +80,13 @@ def save_bottleneck_features(model,train_data_dir,val_data_dir,batch_size):
         batch_size=batch_size,
         class_mode=None,
         shuffle=False)
-    bottleneck_features_validation = model.predict_generator(val_generator, 15)
+    bottleneck_features_validation = model.predict_generator(val_generator, 19)
     np.save(open('bottleneck_features_validation.npy', 'w'), bottleneck_features_validation)
     valLabels = val_generator.classes
     np.save(open('validation_labels.npy','w'), valLabels)
     print 'Val features saved!'
+
+    print generator.class_indices
 
 def open_features():
     '''Open the features saved by the CNN model'''
@@ -117,3 +119,24 @@ def train_top_model(train_data, train_labels, val_data, val_labels):
           epochs=50, batch_size=batch_size,
           validation_data=(val_data,val_labels))
     return NN
+
+def train_top_categorical(train_data, train_labels, val_data, val_labels):
+    '''Train the FC layers'''
+    batch_size = 1
+
+    NNC = Sequential()
+    NNC.add(Flatten(input_shape=train_data.shape[1:]))
+    NNC.add(Dense(512, activation='relu'))
+    NNC.add(Dropout(0.5))
+    NNC.add(Dense(256, activation='relu'))
+    NNC.add(Dropout(0.5))
+    NNC.add(Dense(3, activation='softmax'))
+
+    NNC.compile(optimizer='adam',
+                  loss='categorical_crossentropy',
+                  metrics=['accuracy'])
+
+    NNC.fit(train_data, train_labels,
+          epochs=50, batch_size=batch_size,
+          validation_data=(val_data,val_labels))
+    return NNC
