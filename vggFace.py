@@ -5,10 +5,14 @@ import glob
 import matplotlib.pyplot as plt
 from keras.models import Sequential, Model
 from keras.layers import Flatten, Dense, Dropout, Reshape, Permute, Activation, \
-    Input, merge
+    Input, merge, GlobalAveragePooling2D
 from keras.layers.convolutional import Conv2D, MaxPooling2D, ZeroPadding2D
 from keras.optimizers import SGD
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
+import os
+
+train_dir = "/home/joao/Academia/projects/godEye/DATA/picfaces/train"
+val_dir = "/home/joao/Academia/projects/godEye/DATA/picfaces/val"
 
 def vgg_face(weights_path=None):
     #datagen = ImageDataGenerator(rescale = 1./255, samplewise_center=True)
@@ -140,3 +144,69 @@ def train_top_categorical(train_data, train_labels, val_data, val_labels):
           epochs=50, batch_size=batch_size,
           validation_data=(val_data,val_labels))
     return NNC
+
+def buildModel(extractor):
+    "Build the model based on vggFace extractor"
+    
+    for layer in extractor.layers:
+        layer.trainable = False
+
+    x = extractor.output
+    x = GlobalAveragePooling2D()(x)
+    x = Dense(523, activation='relu')(x)
+    x = Dropout(0.5)(x)
+    x = Dense(256, activation='relu')(x)
+    predictions = Dense(3, activation='softmax')(x) #new softmax layer
+    model = Model(input=extractor.input, output=predictions)
+
+    model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
+    return model
+
+def get_nb_files(directory):
+  """Get number of files by searching directory recursively"""
+  if not os.path.exists(directory):
+    return 0
+  cnt = 0
+  for r, dirs, files in os.walk(directory):
+    for dr in dirs:
+      cnt += len(glob.glob(os.path.join(r, dr + "/*")))
+    return cnt
+
+
+def trainTransfer(model,train_dir, val_dir):
+    """ Train the model built for transfer learning """
+    train_samples = get_nb_files(train_dir)
+    val_samples = get_nb_files(val_dir)
+
+    train_datagen =  ImageDataGenerator(
+            rotation_range=30,
+            width_shift_range=0.2,
+            height_shift_range=0.2,
+            shear_range=0.2,
+            zoom_range=0.2,
+            horizontal_flip=True
+            )
+    test_datagen = ImageDataGenerator(
+            rotation_range=30,
+            width_shift_range=0.2,
+            height_shift_range=0.2,
+            shear_range=0.2,
+            zoom_range=0.2,
+            horizontal_flip=True
+            )   
+    train_generator = train_datagen.flow_from_directory(train_dir,
+            target_size = (224,224),
+            batch_size = 2)
+    test_generator = test_datagen.flow_from_directory(val_dir,
+            target_size = (224,224),
+            batch_size = 2)
+
+    model.fit_generator(train_generator,
+            nb_epoch = 50,
+            samples_per_epoch = train_samples,
+            validation_data = test_generator,
+            nb_val_samples = val_samples,
+            class_weight='auto')
+
+
+
