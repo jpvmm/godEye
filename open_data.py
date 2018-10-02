@@ -66,6 +66,14 @@ def getHogFeatures(images):
 
     return np.array(hog_feat), np.array(hog_img)
 
+def getSingleHogFeatures(image):
+    hog_feat, hog_img = hog(image, orientations=12,
+            pixels_per_cell=(16,16),
+            cells_per_block=(1,1),
+            visualise=True)
+
+    return hog_feat, hog_img
+
 if __name__=="__main__":
     class1 = '/home/joao/Projects/godEye/picfaces/train/guilherme'
     class2 = '/home/joao/Projects/godEye/picfaces/train/joao'

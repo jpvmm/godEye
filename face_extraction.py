@@ -1,3 +1,5 @@
+#!/usr/local/lib/python2.7
+
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
