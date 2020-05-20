@@ -39,7 +39,7 @@ future==0.16.0
 google-api-python-client==1.6.2
 h5py==2.2.1
 html5lib==0.999
-httplib2==0.10.3
+httplib2==0.18.0
 hyperas==0.3
 hyperopt==0.1
 ipykernel==4.3.1
