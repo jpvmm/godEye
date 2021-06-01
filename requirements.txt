@@ -115,7 +115,7 @@ tornado==4.3
 traitlets==4.2.1
 uTidylib==0.2
 uritemplate==3.0.0
-urllib3==1.7.1
+urllib3==1.26.5
 vboxapi==1.0
 virtualenv==15.1.0
 virtualenv-clone==0.2.6
