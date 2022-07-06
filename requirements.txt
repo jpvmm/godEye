@@ -38,7 +38,7 @@ functools32==3.2.3.post2
 future==0.16.0
 google-api-python-client==1.6.2
 h5py==2.2.1
-html5lib==0.999
+html5lib==0.999999999
 httplib2==0.10.3
 hyperas==0.3
 hyperopt==0.1
